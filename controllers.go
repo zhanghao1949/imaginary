@@ -91,7 +91,12 @@ func imageHandler(w http.ResponseWriter, r *http.Request, buf []byte, operation 
 			mimeType = kind.MIME.Value
 		}
 	}
-
+	
+  // Use magick to process bmp image
+	if mimeType == "image/bmp" {
+		mimeType = "image/magick"
+	}
+	
 	// Infer text/plain responses as potential SVG image
 	if strings.Contains(mimeType, "text/plain") && len(buf) > 8 {
 		if bimg.IsSVGImage(buf) {
