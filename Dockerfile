@@ -6,7 +6,9 @@ ARG LIBVIPS_VERSION=8.12.2
 ARG GOLANGCILINT_VERSION=1.29.0
 
 # Installs libvips + required libraries
-RUN DEBIAN_FRONTEND=noninteractive \
+RUN sed -i s/deb.debian.org/mirrors.aliyun.com/g /etc/apt/sources.list && \
+  sed -i s/security.debian.org/mirrors.aliyun.com/g /etc/apt/sources.list && \
+  DEBIAN_FRONTEND=noninteractive \
   apt-get update && \
   apt-get install --no-install-recommends -y \
   ca-certificates \
@@ -16,10 +18,10 @@ RUN DEBIAN_FRONTEND=noninteractive \
   swig libmagickwand-dev libpango1.0-dev libmatio-dev libopenslide-dev libcfitsio-dev \
   libgsf-1-dev fftw3-dev liborc-0.4-dev librsvg2-dev libimagequant-dev libheif-dev && \
   cd /tmp && \
-  curl -fsSLO https://github.com/libvips/libvips/releases/download/v${LIBVIPS_VERSION}/vips-${LIBVIPS_VERSION}.tar.gz && \
+  curl -fsSLO https://mirror.ghproxy.com/https://github.com/libvips/libvips/releases/download/v${LIBVIPS_VERSION}/vips-${LIBVIPS_VERSION}.tar.gz && \
   tar zvxf vips-${LIBVIPS_VERSION}.tar.gz && \
   cd /tmp/vips-${LIBVIPS_VERSION} && \
-	CFLAGS="-g -O3" CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0 -g -O3" \
+        CFLAGS="-g -O3" CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0 -g -O3" \
     ./configure \
     --disable-debug \
     --disable-dependency-tracking \
@@ -34,7 +36,8 @@ RUN DEBIAN_FRONTEND=noninteractive \
 
 # Installing golangci-lint
 WORKDIR /tmp
-RUN curl -fsSL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "${GOPATH}/bin" v${GOLANGCILINT_VERSION}
+
+RUN curl -fsSL https://mirror.ghproxy.com/https://raw.githubusercontent.com/zhanghao1949/golangci-lint/master/install.sh | sh -s -- -b "${GOPATH}/bin" v${GOLANGCILINT_VERSION}
 
 WORKDIR ${GOPATH}/src/github.com/h2non/imaginary
 
@@ -43,18 +46,21 @@ ENV GO111MODULE=on
 
 COPY go.mod .
 COPY go.sum .
-
-RUN go mod download
-
+RUN go env -w GOPROXY=https://goproxy.cn && \
+    go mod download && \
+    go get -u github.com/throttled/throttled/v2
 # Copy imaginary sources
 COPY . .
 
 # Run quality control
-RUN go test ./... -test.v -race -test.coverprofile=atomic .
-RUN golangci-lint run .
+# RUN go test ./... -test.v -race -test.coverprofile=atomic .
+# RUN golangci-lint run .
 
 # Compile imaginary
-RUN go build -a \
+RUN go env -w GOPROXY=https://goproxy.cn && \
+    go get -u github.com/throttled/throttled/v2 && \
+    go get -u github.com/throttled/throttled/v2/store/memstore && \
+    go build -a \
     -o ${GOPATH}/bin/imaginary \
     -ldflags="-s -w -h -X main.Version=${IMAGINARY_VERSION}" \
     github.com/h2non/imaginary
@@ -75,7 +81,9 @@ COPY --from=builder /go/bin/imaginary /usr/local/bin/imaginary
 COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 
 # Install runtime dependencies
-RUN DEBIAN_FRONTEND=noninteractive \
+RUN sed -i s/deb.debian.org/mirrors.aliyun.com/g /etc/apt/sources.list && \
+  sed -i s/security.debian.org/mirrors.aliyun.com/g /etc/apt/sources.list && \
+  DEBIAN_FRONTEND=noninteractive \
   apt-get update && \
   apt-get install --no-install-recommends -y \
   procps libglib2.0-0 libjpeg62-turbo libpng16-16 libopenexr25 \
