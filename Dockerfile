@@ -84,7 +84,13 @@ COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 RUN sed -i s/deb.debian.org/mirrors.aliyun.com/g /etc/apt/sources.list && \
   sed -i s/security.debian.org/mirrors.aliyun.com/g /etc/apt/sources.list && \
   DEBIAN_FRONTEND=noninteractive \
-  apt-get update && \
+  apt update && \
+  apt upgrade -y && \
+  # apt install -y locales && \
+  # sed -i 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+  # locale-gen && \
+  apt -y install xfonts-utils fontconfig fonts-wqy-zenhei && \
+  cd /usr/share/fonts && mkfontscale && mkfontdir && fc-cache && \
   apt-get install --no-install-recommends -y \
   procps libglib2.0-0 libjpeg62-turbo libpng16-16 libopenexr25 \
   libwebp6 libwebpmux3 libwebpdemux2 libtiff5 libgif7 libexif12 libxml2 libpoppler-glib8 \
@@ -95,6 +101,11 @@ RUN sed -i s/deb.debian.org/mirrors.aliyun.com/g /etc/apt/sources.list && \
   apt-get autoclean && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# ENV LC_ALL=en_US.utf8
+# ENV LANG=en_US.utf8
+# ENV LANGUAGE=en_US.utf8
+
 ENV LD_PRELOAD=/usr/local/lib/libjemalloc.so
 
 # Server port to listen
