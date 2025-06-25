@@ -18,7 +18,7 @@ RUN sed -i s/deb.debian.org/mirrors.aliyun.com/g /etc/apt/sources.list && \
   swig libmagickwand-dev libpango1.0-dev libmatio-dev libopenslide-dev libcfitsio-dev \
   libgsf-1-dev fftw3-dev liborc-0.4-dev librsvg2-dev libimagequant-dev libheif-dev && \
   cd /tmp && \
-  curl -fsSLO https://mirror.ghproxy.com/https://github.com/libvips/libvips/releases/download/v${LIBVIPS_VERSION}/vips-${LIBVIPS_VERSION}.tar.gz && \
+  curl -fsSLO https://gh-proxy.com/github.com/libvips/libvips/releases/download/v${LIBVIPS_VERSION}/vips-${LIBVIPS_VERSION}.tar.gz && \
   tar zvxf vips-${LIBVIPS_VERSION}.tar.gz && \
   cd /tmp/vips-${LIBVIPS_VERSION} && \
         CFLAGS="-g -O3" CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0 -g -O3" \
@@ -37,7 +37,7 @@ RUN sed -i s/deb.debian.org/mirrors.aliyun.com/g /etc/apt/sources.list && \
 # Installing golangci-lint
 WORKDIR /tmp
 
-RUN curl -fsSL https://mirror.ghproxy.com/https://raw.githubusercontent.com/zhanghao1949/golangci-lint/master/install.sh | sh -s -- -b "${GOPATH}/bin" v${GOLANGCILINT_VERSION}
+RUN curl -fsSL https://raw.githubusercontent.com/zhanghao1949/golangci-lint/master/install.sh | sh -s -- -b "${GOPATH}/bin" v${GOLANGCILINT_VERSION}
 
 WORKDIR ${GOPATH}/src/github.com/h2non/imaginary
 
